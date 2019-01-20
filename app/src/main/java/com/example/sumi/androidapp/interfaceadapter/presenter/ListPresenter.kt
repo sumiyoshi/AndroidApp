@@ -94,7 +94,9 @@ class ListPresenter : Activity() {
                 val item = object : Callback<List<Item>> {
                     override fun onResponse(call: Call<List<Item>>?, response: Response<List<Item>>?) {
                         mAdapter.clear()
-                        response?.body()?.forEach { mAdapter.add(it) }
+                        response?.body()?.forEach {
+                            mAdapter.add(it)
+                        }
                     }
 
                     override fun onFailure(call: Call<List<Item>>?, t: Throwable?) {
