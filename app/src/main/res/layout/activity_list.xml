@@ -16,11 +16,12 @@
         android:inputType="text" />
 
     <ListView
-        android:id="@+id/list_view"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_alignParentBottom="true"
-        android:layout_below="@id/edit_text"
-        tools:listitem="@layout/list_item" />
+            android:id="@+id/list_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_alignParentBottom="true"
+            android:layout_below="@id/edit_text"
+            tools:listitem="@layout/list_item" app:layout_constraintTop_toTopOf="parent"
+            android:layout_marginTop="40dp"/>
 
 </android.support.constraint.ConstraintLayout>
