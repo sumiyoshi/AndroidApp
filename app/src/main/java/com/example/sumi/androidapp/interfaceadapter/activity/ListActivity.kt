@@ -48,20 +48,23 @@ class ListActivity : AppCompatActivity() {
 
             val view = convertView ?: layoutInflater.inflate(R.layout.list_item, parent, false)
             return view.apply {
-                val imageView = findViewById<ImageView>(R.id.image_view)
-                val itemTitleView = findViewById<TextView>(R.id.item_title)
-                val userNameView = findViewById<TextView>(R.id.user_name)
-
-                // 残ってる画像を消す（再利用された時）
-                imageView.setImageBitmap(null)
-
                 // 表示する行番号のデータを取り出す
-                getItem(position).apply {
-                    Picasso.with(context).load(user?.profile_image_url).into(imageView)
-                    itemTitleView.text = title
-                    userNameView.text = user?.name
-                }
+                getItem(position).render(this)
             }
+        }
+
+        private fun Item.render(view: View) {
+
+            val imageView = view.findViewById<ImageView>(R.id.image_view)
+            val itemTitleView = view.findViewById<TextView>(R.id.item_title)
+            val userNameView = view.findViewById<TextView>(R.id.user_name)
+
+            // 残ってる画像を消す（再利用された時）
+            imageView.setImageBitmap(null)
+
+            Picasso.with(context).load(this.user?.profile_image_url).into(imageView)
+            itemTitleView.text = this.title
+            userNameView.text = this.user?.name
         }
     }
 
@@ -80,31 +83,34 @@ class ListActivity : AppCompatActivity() {
                 hideSoftInputFromWindow(editText.windowToken, 0)
             }
 
-            var text = editText.text.toString()
             try {
                 // url encode
-                text = URLEncoder.encode(text, "UTF-8")
+                URLEncoder.encode(editText.text.toString(), "UTF-8")
+                        .also {
+
+                            if (!TextUtils.isEmpty(it)) {
+
+                                QiitaClientInterface.create().items(it).apply {
+                                    object : Callback<List<Item>> {
+                                        override fun onResponse(call: Call<List<Item>>?, response: Response<List<Item>>?) {
+
+                                            mAdapter.apply {
+                                                clear()
+                                                response?.body()?.forEach { add(it) }
+                                            }
+                                        }
+
+                                        override fun onFailure(call: Call<List<Item>>?, t: Throwable?) {}
+                                    }.apply { enqueue(this) }
+                                }
+                            }
+
+                        }
             } catch (e: UnsupportedEncodingException) {
                 Log.e("", e.toString(), e)
                 return true
             }
 
-            if (!TextUtils.isEmpty(text)) {
-                val request = QiitaClientInterface.create().items(text)
-                Log.d("", request.request().url().toString())
-                val item = object : Callback<List<Item>> {
-                    override fun onResponse(call: Call<List<Item>>?, response: Response<List<Item>>?) {
-                        mAdapter.clear()
-                        response?.body()?.forEach {
-                            mAdapter.add(it)
-                        }
-                    }
-
-                    override fun onFailure(call: Call<List<Item>>?, t: Throwable?) {
-                    }
-                }
-                request.enqueue(item)
-            }
             return true
         }
     }
